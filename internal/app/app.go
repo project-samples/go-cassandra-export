@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/core-go/cassandra/export"
-	f "github.com/core-go/io/formatter"
 	w "github.com/core-go/io/writer"
 	"github.com/gocql/gocql"
 )
@@ -24,7 +23,7 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 	cluster.Authenticator = gocql.PasswordAuthenticator{Username: cfg.Cql.Username, Password: cfg.Cql.Password}
 	cluster.Keyspace = cfg.Cql.Keyspace
 
-	formatter, err := f.NewFixedLengthFormatter[User]()
+	transformer, err := w.NewFixedLengthFormatter[User]()
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +31,7 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 	if err != nil {
 		return nil, err
 	}
-	exporter, err := export.NewExporter(cluster, BuildQuery, formatter.Format, writer.Write, writer.Close)
+	exporter, err := export.NewExporter(cluster, BuildQuery, transformer.Transform, writer.Write, writer.Close)
 	if err != nil {
 		return nil, err
 	}
